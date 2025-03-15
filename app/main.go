@@ -17,15 +17,32 @@ func main() {
 		fmt.Fprint(os.Stdout, "$ ")
 	
 		// Wait for user input
-		command, err := bufio.NewReader(os.Stdin).ReadString('\n')
+		userInput, err := bufio.NewReader(os.Stdin).ReadString('\n')
 		if err != nil {
 			fmt.Errorf("Error reading input: %v", err)
 		}
+		command, args := parseInput(userInput)
 
-		if strings.Contains(command, "exit") {
+		if command == "echo" {
+			echoString := strings.Join(args, " ")
+			fmt.Println(echoString)
+		} else if command == "exit" {
 			os.Exit(0)
-		}
-	
-		fmt.Printf("%v: command not found\n", strings.TrimSpace(command))
+		} else {
+			fmt.Printf("%v: command not found\n", strings.TrimSpace(command))
+		} 
 	}
+}
+
+func parseInput(input string) (string, []string) {
+	strs := strings.Split(input, " ")
+	
+	// Strip the \n from the end of the last arg
+	strs[len(strs) - 1] = strings.TrimSpace(strs[len(strs) - 1])
+
+	if len(strs) > 1 {
+		return strs[0], strs[1:]
+	}
+
+	return strs[0], []string{}
 }
