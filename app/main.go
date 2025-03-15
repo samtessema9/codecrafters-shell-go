@@ -21,6 +21,10 @@ func main() {
 		if err != nil {
 			fmt.Errorf("Error reading input: %v", err)
 		}
+
+		if strings.Contains(command, "exit") {
+			os.Exit(0)
+		}
 	
 		fmt.Printf("%v: command not found\n", strings.TrimSpace(command))
 	}
