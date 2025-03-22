@@ -6,10 +6,16 @@ import (
 	"os"
 
 	"strings"
+
+	"github.com/scylladb/go-set"
+	"github.com/scylladb/go-set/strset"
 )
 
-// Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
-var _ = fmt.Fprint
+var validCommands *strset.Set = set.NewStringSet(
+	"echo",
+	"exit",
+	"type",
+)
 
 func main() {
 	for {
@@ -23,14 +29,22 @@ func main() {
 		}
 		command, args := parseInput(userInput)
 
-		if command == "echo" {
+		switch (command) {
+		case "exit":
+			os.Exit(0)
+		case "echo": 
 			echoString := strings.Join(args, " ")
 			fmt.Println(echoString)
-		} else if command == "exit" {
-			os.Exit(0)
-		} else {
+		case "type":
+			exists := validCommands.Has(args[0])
+			if exists {
+				fmt.Printf("%v is a shell builtin", args[0])
+			} else {
+				fmt.Printf("%v: not found", args[0])
+			}
+		default:
 			fmt.Printf("%v: command not found\n", strings.TrimSpace(command))
-		} 
+		}
 	}
 }
 
