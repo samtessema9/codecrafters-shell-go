@@ -18,6 +18,7 @@ var validCommands *strset.Set = set.NewStringSet(
 )
 
 func main() {
+	fmt.Printf("PATH: %v", os.Getenv("PATH"))
 	for {
 		// Prompt User
 		fmt.Fprint(os.Stdout, "$ ")
@@ -36,11 +37,13 @@ func main() {
 			echoString := strings.Join(args, " ")
 			fmt.Println(echoString)
 		case "type":
-			exists := validCommands.Has(args[0])
-			if exists {
-				fmt.Printf("%v is a shell builtin", args[0])
+			existsLocally := validCommands.Has(args[0])
+			if existsLocally {
+				fmt.Printf("%v is a shell builtin\n", args[0])
 			} else {
-				fmt.Printf("%v: not found", args[0])
+				// Search for arg in all the PATHs
+
+				fmt.Printf("%v: not found\n", args[0])
 			}
 		default:
 			fmt.Printf("%v: command not found\n", strings.TrimSpace(command))
@@ -59,4 +62,9 @@ func parseInput(input string) (string, []string) {
 	}
 
 	return strs[0], []string{}
+}
+
+func parsePath(PATH string) []string {
+	paths := strings.Split(PATH, ":")
+	return paths
 }
