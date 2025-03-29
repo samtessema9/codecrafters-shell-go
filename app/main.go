@@ -18,7 +18,6 @@ var validCommands *strset.Set = set.NewStringSet(
 )
 
 func main() {
-	fmt.Printf("PATH: %v", os.Getenv("PATH"))
 	for {
 		// Prompt User
 		fmt.Fprint(os.Stdout, "$ ")
@@ -41,9 +40,11 @@ func main() {
 			if existsLocally {
 				fmt.Printf("%v is a shell builtin\n", args[0])
 			} else {
-				// Search for arg in all the PATHs
-
-				fmt.Printf("%v: not found\n", args[0])
+				if path := investigatePath(args[0]); path != "" {
+					fmt.Printf("%v is %v\n", args[0], path)
+				} else {
+					fmt.Printf("%v: not found\n", args[0])
+				}
 			}
 		default:
 			fmt.Printf("%v: command not found\n", strings.TrimSpace(command))
@@ -64,7 +65,32 @@ func parseInput(input string) (string, []string) {
 	return strs[0], []string{}
 }
 
-func parsePath(PATH string) []string {
-	paths := strings.Split(PATH, ":")
+func parsePath() []string {
+	path := os.Getenv("PATH")
+	if path == "" {
+		fmt.Errorf("PATH not found!")
+		os.Exit(0)
+	}
+
+	paths := strings.Split(path, ":")
+	
 	return paths
+}
+
+func investigatePath(cmd string) string {
+	paths := parsePath()
+
+	for _, path := range paths {
+		filename := fmt.Sprintf("%v/%v", path, cmd)
+
+		_, err := os.Stat(filename)
+
+		if os.IsNotExist(err) {
+			continue
+		} else {
+			return filename
+		}
+	}
+
+	return ""
 }
